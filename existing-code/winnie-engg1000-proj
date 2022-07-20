@@ -1,0 +1,388 @@
+// =======================================================
+// ENGG1000 - Team 13 (BREADWINNERS PTP) Robot Code
+// Controls motors, buzzer and ultrasonic sensor for the 
+// recue robot.
+// Steer a robot and control its direction and speed with 
+// a simple motor controller interface.
+// Buzzer sounds when detects objects in front of it.
+// Ultrasonic sensor also detects the distance from the 
+// object and the robot.
+// Written by Winnie Zhang (z5358896) in 2021.
+// Inspired by course notes and Arduino library notes.
+// ======================================================= 
+
+// -------------------------------------------------------
+// Global Variables
+// -------------------------------------------------------
+
+const int buzzer = 4; //buzzer to arduino pin 4
+int rightMotorLogicPin1 = 5;    
+int rightMotorLogicPin2 = 6;  
+int sensorTrigPin = 13;    
+int sensorEchoPin = 12;    
+int leftMotorLogicPin1 = 9;    
+int leftMotorLogicPin2 = 10; 
+
+// -------------------------------------------------------
+// Subroutine: Initialize Motor Pins
+// Assigning names to the pin.
+// -------------------------------------------------------
+
+void initializeMotorPins(){
+    pinMode(rightMotorLogicPin1, OUTPUT);   
+    pinMode(rightMotorLogicPin2, OUTPUT);   
+    pinMode(leftMotorLogicPin1, OUTPUT);   
+    pinMode(leftMotorLogicPin2, OUTPUT);   
+
+    // Print the motor pin configuration for wiring.
+    Serial.print("Right Motor Pin 1 = ");
+    Serial.println(rightMotorLogicPin1);
+    Serial.print("Right Motor Pin 2 = ");
+    Serial.println(rightMotorLogicPin2);
+    Serial.print("Left Motor Pin 1 = ");
+    Serial.println(leftMotorLogicPin1);
+    Serial.print("Left Motor Pin 2 = ");
+    Serial.println(leftMotorLogicPin2);
+}
+
+// -------------------------------------------------------
+// Subroutine: Initialize Sensor
+// Assigning names to the pin.
+// -------------------------------------------------------
+
+void initializeSensor(){
+    // Set up the pins
+    pinMode(sensorTrigPin, OUTPUT);
+    digitalWrite(sensorTrigPin, LOW);
+    pinMode(sensorEchoPin, INPUT);
+  
+    // Print the pin configuration for wiring.
+    Serial.print("Sensor Trig Pin = ");
+    Serial.println(sensorTrigPin);
+    Serial.print("Sensor Echo Pin = ");
+    Serial.println(sensorEchoPin);
+}
+
+// -------------------------------------------------------
+// Subroutine: Print Instructions.
+// -------------------------------------------------------
+
+void printInstructions(){   
+    // Print the pin configuration for wiring.
+    delay(1000);
+    Serial.println("-------------------------------------");
+    Serial.println("Thank you for using Breadwinner's Rescue Robot!");
+    Serial.println("-------------------------------------");
+    delay(1000);
+    Serial.println("~Direction Commands~");
+    delay(1000);
+    Serial.println("To move forward, type 'f' and press enter.");
+    Serial.println("To move backward, type 'b' and press enter.");
+    Serial.println("To turn left, type 'l' and press enter.");
+    Serial.println("To turn right, type 'r' and press enter.");
+    Serial.println("To stop the robot, enter '0'");
+    delay(1000);
+    Serial.println("-------------------------------------");
+    Serial.println("~Speed Commands~");  
+    delay(1000); 
+    Serial.println("To have the robot travel at 25% speed, type '1' and press enter.");
+    Serial.println("To have the robot travel at 50% speed, type '2' and press enter.");
+    Serial.println("To have the robot travel at 75% speed, type '3' and press enter.");
+    Serial.println("To have the robot travel at 100% speed, type '4' and press enter.");
+    delay(1000);
+    Serial.println("-------------------------------------");
+    Serial.println("~Distance Commands~");
+    delay(1000);
+    Serial.println("To detect the distance the robot is from the robot, type 'd' and press enter.");
+    Serial.println("A beeping sound will go off when an object is 20cm close to the robot."); 
+    Serial.println("The beeping will quicken as the object becomes closer to the robot."); 
+    delay(1000);
+    Serial.println("-------------------------------------");
+    Serial.println("~Exit Commands~");
+    delay(1000);
+    Serial.println("To exit the program, type 'x' and press enter."); 
+    delay(1000);
+    Serial.println("-------------------------------------");
+    delay(1000);
+    Serial.println("To start off, type a direction and press enter"); 
+    Serial.println("and then type a speed and press enter."); 
+    Serial.println("-------------------------------------");
+}
+
+// -------------------------------------------------------
+// Function: Receive Byte
+// -------------------------------------------------------
+
+char receiveCommand(){
+    char command = 0;  
+    // See if there's incoming serial data:
+    if (Serial.available() > 0) {
+        // Read the oldest byte in the serial buffer:
+        command = Serial.read();
+    }
+    return command;
+}
+
+// -------------------------------------------------------
+// Function: Update Direction
+// -------------------------------------------------------
+
+char updateDirection(char command, char currentDirection){
+    // Is this a direction; 'f' 'b' 'l' 'r'
+    if (command == 'f') {
+        Serial.println("Forward command received and executed.");
+        currentDirection = 'f';
+    }
+    if (command == 'b') {
+        Serial.println("Backwards command received and executed.");
+        currentDirection = 'b';
+    }
+    if (command == 'l') {
+        Serial.println("Turn Left command received and executed.");
+        currentDirection = 'l';
+    }
+    if (command == 'r') {
+        Serial.println("Turn Right command received and executed.");
+        currentDirection = 'r';
+    }
+    return currentDirection;
+}
+
+// -------------------------------------------------------
+// Function: Update Speed
+// -------------------------------------------------------
+
+int updateSpeed(char command, int pwmDutyCycle){
+    // Is this a motor speed 0 - 5
+    // Where the value for 100% speed for pwmDutyCycle would be 256.
+    if (command == '0') {
+      Serial.println("Stopped");
+      pwmDutyCycle = 0;
+    }
+    if (command == '1') {
+      Serial.println("Speed = 25%");
+      pwmDutyCycle = 51;
+    }
+    if (command == '2') {
+      Serial.println("Speed = 50%");
+      pwmDutyCycle = 77;
+    }
+    if (command == '3') {
+      Serial.println("Speed = 75%");
+      pwmDutyCycle = 102;
+    }
+    if (command == '4') {
+      Serial.println("Speed = 100%");
+      pwmDutyCycle = 128;
+    }
+    return pwmDutyCycle;  
+}
+  
+// -------------------------------------------------------
+// Subroutine: Set Motor Pins
+// -------------------------------------------------------
+
+void setMotorPins(int currentDirection, int pwmDutyCycle){
+    // Reset all of the pins
+    analogWrite(rightMotorLogicPin1, 0);   
+    analogWrite(rightMotorLogicPin2, 0);   
+    analogWrite(leftMotorLogicPin1, 0);   
+    analogWrite(leftMotorLogicPin2, 0);
+    
+    // Right motor logic pin 1
+    if ((currentDirection == 'b') || (currentDirection == 'r')) {
+        analogWrite(rightMotorLogicPin1, pwmDutyCycle);
+    }
+    
+    // Right motor logic pin 2
+    if ((currentDirection == 'f') || (currentDirection =='l')) {
+        analogWrite(rightMotorLogicPin2, pwmDutyCycle);
+    }
+    
+    // Left motor logic pin 1
+    if ((currentDirection == 'b') || (currentDirection == 'l')) {
+        analogWrite(leftMotorLogicPin1, pwmDutyCycle);
+    }
+    
+    // Left motor logic pin 2
+    if ((currentDirection == 'f') || (currentDirection == 'r')) {
+       analogWrite(leftMotorLogicPin2, pwmDutyCycle);
+    }
+}
+
+// -------------------------------------------------------
+// Function: Update distance 
+// Detect and print the distance from an object 
+// -------------------------------------------------------
+
+int detectDistance(unsigned long clockStart,unsigned long clockMax, unsigned long timeMax,float distance){
+    // Send the 10 usec trigger pulse.
+    digitalWrite(sensorTrigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(sensorTrigPin, LOW);
+    
+    // Once triggered it take about 500 usec for the echo pin to go high.
+    // Set the max wait time.
+    clockMax = micros() + 1000;
+  
+    // Wait for the echo pin to go high.
+    while ((micros() < clockMax) && (digitalRead(sensorEchoPin) == LOW));
+    
+    // Initialise the echo timer.
+    clockStart = micros();
+    clockMax = clockStart + timeMax;
+  
+    // Read the sensor delay time by waiting for the echo pin to go low.
+    while ((micros() < clockMax) && (digitalRead(sensorEchoPin) == HIGH));
+    
+    // Calculate the distance in cm.
+    distance = float(micros() - clockStart) / 58.0;
+    
+    return distance;
+}
+
+// -------------------------------------------------------
+// The setup() method runs once, when the sketch starts
+// -------------------------------------------------------
+
+void setup(){ 
+ 
+    // Initialise the serial communications.
+    Serial.begin(9600);
+  
+    // Print the program details.
+    Serial.println("-------------------------------------");
+    Serial.println("Program: Team 13's Rescue Robot"); 
+    Serial.println("Initialising ...");
+  
+    //Initialise buzzer.
+    pinMode(buzzer, OUTPUT);
+    
+    // Call a subroutine to initialize the motor pins.
+    initializeMotorPins();
+  
+    //Call a subroutine to initialise the sensor.
+    initializeSensor();
+  
+    // Initialization completed successfully.
+    Serial.println("Initialisation complete");
+  
+    printInstructions(); 
+}
+
+// -------------------------------------------------------
+// The loop() method runs over and over again
+// -------------------------------------------------------
+
+void loop(){
+
+    // Local variables.
+    unsigned long clockStart;
+    unsigned long clockMax;
+    unsigned long timeMax = 60000;
+    float distance = 0;    
+    int pwmDutyCycle = 0;
+    char currentDirection = 'x';
+    char command = 0;
+    bool keyboardControl = true;
+  
+    // Control the motors from the keyboard.
+    while (keyboardControl) {
+        // Continuously record the distance from the robot to any object in
+        // front of it.
+        distance = detectDistance(clockStart,clockMax, timeMax ,distance);
+        
+        // Wait for a command from the keyboard.
+        command = receiveCommand(); 
+
+        // Continuously record the distance from the robot to any object in
+        // front of it.
+        distance = detectDistance(clockStart,clockMax, timeMax ,distance);
+        
+        // Update the direction of the robot.
+        currentDirection = updateDirection(command, currentDirection);
+
+        // Continuously record the distance from the robot to any object in
+        // front of it.
+        distance = detectDistance(clockStart,clockMax, timeMax ,distance);
+        
+        // Update the speed of the robot.
+        pwmDutyCycle = updateSpeed(command, pwmDutyCycle);
+
+        // Continuously record the distance from the robot to any object in
+        // front of it.
+        distance = detectDistance(clockStart,clockMax, timeMax ,distance);
+        
+        // Set the motor pins according to speed and direction.
+        setMotorPins(currentDirection, pwmDutyCycle);
+
+        // Continuously record the distance from the robot to any object in
+        // front of it.
+        distance = detectDistance(clockStart,clockMax, timeMax ,distance);
+        
+        if (command == 'd') {
+                Serial.println(distance);
+        }
+
+        // Continuously record the distance from the robot to any object in
+        // front of it.
+        distance = detectDistance(clockStart,clockMax, timeMax ,distance);
+
+        // If the distance between an object and the robot is less than 20cm
+        // but greater than or equal to 10cm, play a tone slowly.
+        while(distance < 20 && distance >= 10) {
+            // Send 1KHz sound signal...
+            tone(buzzer, 1000); 
+            // ...for 200ms.
+            delay(200);  
+            // Stop sound...
+            noTone(buzzer);
+            // ...for 600ms.     
+            delay(600);  
+                  
+            // Continuously record the distance from the robot to any object in
+            // front of it.
+            distance = detectDistance(clockStart,clockMax, timeMax ,distance);
+        }
+
+         // If the distance between an object and the robot is less than 10cm
+         // but greater than 10cm, play a tone at a faster speed.
+         while(distance < 10 && distance >= 5) {
+             // Send 1KHz sound signal...
+             tone(buzzer, 1000); 
+             // ...for 200ms.
+             delay(200);        
+             // Stop sound...
+             noTone(buzzer);     
+             // ...for 300ms.
+             delay(300);        
+
+             // Continuously record the distance from the robot to any object in
+             // front of it.            
+             distance = detectDistance(clockStart,clockMax, timeMax ,distance);
+         }
+
+         // If the distance between an object and the robot is less than 5cm
+         // play a tone at a much faster speed.        
+         while(distance < 5) {
+             // Send 1KHz sound signal...
+             tone(buzzer, 1000); 
+             // ...for 200ms.
+             delay(200); 
+             // Stop sound...       
+             noTone(buzzer); 
+             // ...for 10ms.    
+             delay(10);   
+            
+             // Continuously record the distance from the robot to any object in
+             // front of it.                    
+             distance = detectDistance(clockStart,clockMax, timeMax ,distance);
+         } 
+    
+         // Exit command which terminates the program.
+         if (command == 'x') {
+             keyboardControl = false;
+             Serial.println("Program terminated. Have a nice day!");
+         }     
+    }      
+}

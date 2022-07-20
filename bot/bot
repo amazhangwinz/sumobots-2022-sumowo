@@ -1,0 +1,160 @@
+#define trigPin 3
+#define echoPin 2
+#define MAX_RANGE 400
+#define MIN_RANGE 2
+#define SPEED_SOUND 0.0344
+
+#define WHITE 1
+#define BLACK 0
+#define CLOSE 1
+#define FAR 0
+
+#define LEFT_F 4    // Motor A (left) forward pin
+#define LEFT_R 5    // Motor A (left) reverse pin
+#define RIGHT_R 6   // Motor B (right) reverse pin
+#define RIGHT_F 7   // Motor B (right) forward pin
+#define IRSensor 11 // connect ir sensor to arduino pin 2
+
+
+// IR code
+int IRSensing() {
+  int statusSensor = digitalRead(IRSensor);
+  
+  if (statusSensor == 1){
+    return WHITE;
+  }
+  
+  else
+  {
+    return BLACK;
+
+  }
+}
+
+// on off button code
+
+// think about use buzzer
+
+// Motor enables (to control power)
+#define LEFT_SPEED 9  // left enable pin (ENA)
+#define RIGHT_SPEED 10 // right enable pin (ENB)
+
+#define MAX_SPEED 255
+
+void setup() {
+  Serial.begin (9600)
+
+  // Initialise Ultrasonic sensor
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+    // Intiatlise motors
+  Serial.println("Setting pins for motors");
+  pinMode(LEFT_F, OUTPUT);
+  pinMode(LEFT_R, OUTPUT);
+  pinMode(RIGHT_F, OUTPUT);
+  pinMode(RIGHT_R, OUTPUT);
+
+  pinMode(LEFT_SPEED, OUTPUT);
+  pinMode(RIGHT_SPEED, OUTPUT);
+
+  // Initialise IR sensor
+  pinMode (IRSensor, INPUT); // sensor pin INPUT
+
+}
+
+int sensor() {
+  float duration, distance;
+
+  digitalWrite(trigPin, LOW); 
+
+  // Pulses to obtain reading
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  // calculating distance from inputs
+  duration = pulseIn(echoPin, HIGH);
+  distance = (duration / 2) * SPEED_SOUND + 0.77;
+
+  // printing distance into the serial monitor
+  Serial.print("Distance = ");
+  if (distance <= 300) {
+    return CLOSE
+  }
+ 
+  delay(500);
+}
+
+void moveBackward() {
+  // Move backwards at MAX_SPEED
+  analogWrite(LEFT_SPEED, MAX_SPEED);
+  analogWrite(RIGHT_SPEED, MAX_SPEED);
+  digitalWrite(RIGHT_F, LOW);
+  digitalWrite(RIGHT_R, HIGH);
+  digitalWrite(LEFT_F, LOW);
+  digitalWrite(LEFT_R, HIGH);
+}
+void moveForward() {
+  // Move forward at MAX_SPEED
+  analogWrite(LEFT_SPEED, MAX_SPEED);
+  analogWrite(RIGHT_SPEED, MAX_SPEED);
+  digitalWrite(RIGHT_F, HIGH);
+  digitalWrite(RIGHT_R, LOW);
+  digitalWrite(LEFT_F, HIGH);
+  digitalWrite(LEFT_R, LOW);
+}
+
+void turnLeft() {
+  // turnLeft at MAX_SPEED
+  analogWrite(LEFT_SPEED, MAX_SPEED);
+  analogWrite(RIGHT_SPEED, MAX_SPEED);
+  digitalWrite(RIGHT_F, LOW);
+  digitalWrite(RIGHT_R, HIGH);
+  digitalWrite(LEFT_F, HIGH);
+  digitalWrite(LEFT_R, LOW);
+}
+
+void turnRight() {
+  // TURN Right at MAX_SPEED
+  analogWrite(LEFT_SPEED, MAX_SPEED);
+  analogWrite(RIGHT_SPEED, MAX_SPEED);
+  digitalWrite(RIGHT_F, LOW);
+  digitalWrite(RIGHT_R, HIGH);
+  digitalWrite(LEFT_F, HIGH);
+  digitalWrite(LEFT_R, LOW);
+}
+
+void ceaseMovement() {
+  // stop moving
+  analogWrite(LEFT_SPEED, MAX_SPEED);
+  analogWrite(RIGHT_SPEED, MAX_SPEED);
+  digitalWrite(RIGHT_F, LOW);
+  digitalWrite(RIGHT_R, LOW);
+  digitalWrite(LEFT_F, LOW);
+  digitalWrite(LEFT_R, LOW);
+}
+
+void PWMOutput() {
+  // Gives a PWM output to ENABLE_A corresponding to MAX_SPEED
+  analogWrite(RIGHT_SPEED, MAX_SPEED);
+  digitalWrite(RIGHT_F, HIGH);
+  digitalWrite(RIGHT_R, LOW);
+  digitalWrite(LEFT_F, HIGH);
+  digitalWrite(LEFT_R, LOW);
+}
+
+void loop() {
+
+  while (on) {
+    // keep checking on button status
+
+    // charge at opponent
+    if ()
+
+
+  }
+
+
+}
