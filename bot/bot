@@ -301,7 +301,6 @@ void searchRightUntilSense() {
 
     IRSensing();
 
- 
     circleRight();
 //        delay();
    Serial.println("heymotor");
@@ -334,8 +333,8 @@ void circleRight() {
     // TURN Right at MAX_SPEED
   analogWrite(LEFT_SPEED, MAX_SPEED);
   analogWrite(RIGHT_SPEED, HALF_SPEED);
-  digitalWrite(RIGHT_F, LOW);
-  digitalWrite(RIGHT_R, HIGH);
+  digitalWrite(RIGHT_F, HIGH);
+  digitalWrite(RIGHT_R, LOW);
   digitalWrite(LEFT_F, HIGH);
   digitalWrite(LEFT_R, LOW);
 }
