@@ -150,21 +150,60 @@ void ceaseMovement() {
 // ir inside here
 void searchRightUntilSense() {
   while (true) {
+  int status = checkOnOff();
+
+  if (status == TURN_OFF) {
+    return;    
+  }
     IRSensing();
+  int status = checkOnOff();
+
+  if (status == TURN_OFF) {
+    return;    
+  }
     circleRight();
+  int status = checkOnOff();
+
+  if (status == TURN_OFF) {
+    return;    
+  }
     IRSensing();
+
+      int status = checkOnOff();
+
+  if (status == TURN_OFF) {
+    return;    
+  }
     if (ultrasensor(100) == CLOSE) {
+        int status = checkOnOff();
+
+  if (status == TURN_OFF) {
+    return;    
+  }
       // move forward until no longer see bot
     IRSensing();
       while (true) {
     IRSensing();
+      int status = checkOnOff();
+
+  if (status == TURN_OFF) {
+    return;    
+  }
 
         moveForward();
     IRSensing();
+  int status = checkOnOff();
 
+  if (status == TURN_OFF) {
+    return;    
+  }
         if (ultrasensor(100) != CLOSE) {
     IRSensing();
-  
+    int status = checkOnOff();
+
+  if (status == TURN_OFF) {
+    return;    
+  }
           break;
         }
       }
@@ -200,9 +239,11 @@ void checkOnOff() {
     // turn LED on:
     Serial.println("pressed");
     delay(5000);
+    return TURN_ON;
   } else if (lastState == LOW && currentState == HIGH) {
     // turn LED off:
     Serial.println("released");
+    return TURN_OFF;
   } 
   lastState = currentState;
 }
@@ -220,8 +261,6 @@ void loop() {
   }
 
   // 
-
-
 
 }
 
