@@ -25,6 +25,8 @@ int IRSensing() {
   int statusSensor = digitalRead(IRSensor);
   
   if (statusSensor == 1){
+    moveBackward();
+    delay(500);
     return WHITE;
   }
   
@@ -44,6 +46,7 @@ int IRSensing() {
 #define RIGHT_SPEED 10 // right enable pin (ENB)
 
 #define MAX_SPEED 255
+#define HALF_SPEED 128
 
 void setup() {
   Serial.begin (9600)
@@ -70,7 +73,7 @@ void setup() {
 
 }
 
-int ultrasensor() {
+int ultrasensor(int length) {
   float duration, distance;
 
   digitalWrite(trigPin, LOW); 
@@ -87,7 +90,7 @@ int ultrasensor() {
 
   // printing distance into the serial monitor
   Serial.print("Distance = ");
-  if (distance <= 300) {
+  if (distance <= length) {
     return CLOSE
   }
  
@@ -143,6 +146,42 @@ void ceaseMovement() {
   digitalWrite(LEFT_R, LOW);
 }
 
+// When not sense it
+// ir inside here
+void searchRightUntilSense() {
+  while (true) {
+    IRSensing();
+    circleRight();
+    IRSensing();
+    if (ultrasensor(100) == CLOSE) {
+      // move forward until no longer see bot
+    IRSensing();
+      while (true) {
+    IRSensing();
+
+        moveForward();
+    IRSensing();
+
+        if (ultrasensor(100) != CLOSE) {
+    IRSensing();
+  
+          break;
+        }
+      }
+    }
+  }
+}
+
+void circleRight() {
+    // TURN Right at MAX_SPEED
+  analogWrite(LEFT_SPEED, MAX_SPEED);
+  analogWrite(RIGHT_SPEED, HALF_SPEED);
+  digitalWrite(RIGHT_F, LOW);
+  digitalWrite(RIGHT_R, HIGH);
+  digitalWrite(LEFT_F, HIGH);
+  digitalWrite(LEFT_R, LOW);
+}
+
 // void PWMOutput() {
 //   // Gives a PWM output to ENABLE_A corresponding to MAX_SPEED
 //   analogWrite(RIGHT_SPEED, MAX_SPEED);
@@ -173,15 +212,19 @@ int lastState = LOW;
 int currentState;
 
 void loop() {
+  // fix delay
   int status = checkOnOff();
 
   if (status == TURN_ON) {
-    moveBackward();
-    delay(500);
-
-    
+    searchRightUntilSense();    
   }
+
+  // 
 
 
 
 }
+
+// bump into white --> straight back for 0.5 sec
+
+
